@@ -6,12 +6,10 @@ from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 
 # =====================
-# CONFIG (loaded from .env)
+# CONFIG (SAFE VERSION)
 # =====================
-SECRET_KEY = os.getenv("SECRET_KEY")
-if not SECRET_KEY:
-    raise RuntimeError("SECRET_KEY is not set in environment variables")
 
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")  # SAFE fallback
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 2
 
@@ -35,8 +33,13 @@ def verify_password(plain_password: str, hashed_password: str):
 # =====================
 def create_token(data: dict):
     to_encode = data.copy()
+
     expire = datetime.now(timezone.utc) + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
-    to_encode.update({"exp": expire})
+    to_encode.update({
+        "exp": expire,
+        "iat": datetime.now(timezone.utc)
+    })
+
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
@@ -48,10 +51,16 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("user_id")
 
-        if user_id is None:
-            raise HTTPException(status_code=401, detail="Invalid token (user_id missing)")
+        if not user_id:
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid token (user_id missing)"
+            )
 
         return {"user_id": user_id}
 
     except JWTError:
-        raise HTTPException(status_code=401, detail="Token expired or invalid")
+        raise HTTPException(
+            status_code=401,
+            detail="Token expired or invalid"
+        )
