@@ -23,15 +23,10 @@ export default function LoginPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
-
-      console.log("LOGIN RESPONSE:", data);
 
       if (!res.ok) {
         setError(data.detail || "Login failed");
@@ -39,15 +34,11 @@ export default function LoginPage() {
         return;
       }
 
-      // save token
       localStorage.setItem("token", data.access_token);
 
-      // redirect to dashboard
       router.push("/");
-
     } catch (err) {
-      console.error(err);
-      setError("Backend not running or network error");
+      setError("Backend not reachable");
     }
 
     setLoading(false);
@@ -55,18 +46,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black text-white">
-
       <div className="bg-gray-900 p-8 rounded-xl w-96">
+        <h1 className="text-2xl mb-6 text-center">Login</h1>
 
-        <h1 className="text-2xl mb-6 text-center">
-          Login
-        </h1>
-
-        {error && (
-          <p className="text-red-500 mb-3 text-center">
-            {error}
-          </p>
-        )}
+        {error && <p className="text-red-500 mb-3 text-center">{error}</p>}
 
         <input
           className="w-full p-2 mb-4 text-black rounded"
@@ -88,9 +71,7 @@ export default function LoginPage() {
         >
           {loading ? "Logging in..." : "Login"}
         </button>
-
       </div>
-
     </div>
   );
 }
