@@ -19,13 +19,14 @@ app = FastAPI(
 )
 
 # -------------------
-# CORS FIX
+# CORS FIX (IMPORTANT)
 # -------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "http://127.0.0.1:3000"
+        "http://127.0.0.1:3000",
+        "https://ai-content-marketinggg.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -39,12 +40,15 @@ app.include_router(auth_router, prefix="/auth")
 app.include_router(ai_router)
 
 # -------------------
-# ROOT
+# ROOT ROUTE
 # -------------------
 @app.get("/")
 def root():
     return {"message": "AI Marketing Platform Running"}
 
+# -------------------
+# TEST ROUTE
+# -------------------
 @app.get("/test")
 def test():
     return {"status": "working"}
