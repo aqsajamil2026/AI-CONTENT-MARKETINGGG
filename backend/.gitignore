@@ -1,4 +1,6 @@
 backend/.env
+backend/.env.local
+backend/routes/.env
 frontend/node_modules/
 frontend/.next/
 backend/__pycache__/

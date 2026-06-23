@@ -11,7 +11,7 @@ from fastapi.security import OAuth2PasswordBearer
 
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")  # SAFE fallback
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_HOURS = 2
+ACCESS_TOKEN_EXPIRE_HOURS = int(os.getenv("ACCESS_TOKEN_EXPIRE_HOURS", "24"))
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

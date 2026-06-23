@@ -1,18 +1,22 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from auth import get_current_user
-from groq import Groq
+from openai import OpenAI
 import os
 
 router = APIRouter(prefix="/ai")
 
 # 🔥 FIX: direct env use (NO load_dotenv needed on HF)
-api_key = os.getenv("GROQ_API_KEY")
+api_key = os.getenv("XAI_API_KEY") or os.getenv("GROK_API_KEY")
+model = os.getenv("XAI_MODEL", "grok-4.3")
 
 if not api_key:
-    print("WARNING: GROQ_API_KEY is missing!")
+    print("WARNING: XAI_API_KEY or GROK_API_KEY is missing!")
 
-client = Groq(api_key=api_key)
+client = OpenAI(
+    api_key=api_key,
+    base_url="https://api.x.ai/v1",
+)
 
 
 class PromptRequest(BaseModel):
@@ -20,17 +24,33 @@ class PromptRequest(BaseModel):
 
 
 def ask_ai(user_prompt: str):
-    try:
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
-                {"role": "user", "content": user_prompt}
-            ]
+    if not api_key:
+        raise HTTPException(
+            status_code=500,
+            detail="XAI_API_KEY or GROK_API_KEY is missing in backend environment",
         )
-        return response.choices[0].message.content
+
+    try:
+        response = client.responses.create(
+            model=model,
+            input=[
+                {
+                    "role": "system",
+                    "content": "You are Grok, an expert AI marketing assistant.",
+                },
+                {
+                    "role": "user",
+                    "content": user_prompt,
+                },
+            ],
+        )
+        return response.output_text
 
     except Exception as e:
-        return f"AI Error: {str(e)}"
+        raise HTTPException(
+            status_code=500,
+            detail=f"Grok API error: {str(e)}",
+        )
 
 
 @router.post("/generate-caption")

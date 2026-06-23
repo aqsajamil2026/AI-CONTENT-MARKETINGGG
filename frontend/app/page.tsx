@@ -24,9 +24,15 @@ export default function Home() {
 
   const callAPI = async (endpoint: string, field: string) => {
     setLoading(true);
+    setResult("");
 
     try {
       const token = localStorage.getItem("token");
+
+      if (!token) {
+        router.push("/login");
+        return;
+      }
 
       const response = await fetch(`${API}/ai/${endpoint}`, {
         method: "POST",
@@ -40,6 +46,13 @@ export default function Home() {
       const data = await response.json();
 
       if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem("token");
+          setResult("Your session expired. Please log in again.");
+          router.push("/login");
+          return;
+        }
+
         setResult(data.detail || "Request failed");
       } else {
         setResult(
@@ -51,9 +64,9 @@ export default function Home() {
     } catch (error) {
       console.error(error);
       setResult("Something went wrong.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
