@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
-  const API = "https://aqsajamil112-aiautomation.hf.space";
+  
 
   const API =
     process.env.NEXT_PUBLIC_API_URL ||
